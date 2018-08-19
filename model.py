@@ -110,7 +110,7 @@ class MySegmentator(nn.Module):
         )
         self.block9 = nn.Sequential(
             nn.Conv2d(64, 1, 1),
-            nn.Sigmoid()
+            nn.Hardtanh(min_val=0)
         )
 
 
@@ -131,6 +131,6 @@ class MySegmentator(nn.Module):
 
 
 if __name__ == "__main__":
-    data = torch.empty(30, 3, 128, 128).uniform_(0, 1).cuda()
+    data = torch.empty(10, 3, 32, 32).uniform_(0, 1).cuda()
     segmentator = MySegmentator().cuda()
-    print(segmentator(data).shape)
+    print(segmentator(data).max())
