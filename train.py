@@ -52,9 +52,10 @@ class SegmentationTrainer():
                     images, masks = images.cuda(), masks.cuda()
                 predictions = self.model(images)
                 if j == 0:
-                    torchvision.utils.save_image(images, './test/image.png', 10)
-                    torchvision.utils.save_image(masks, './test/masks.png', 10)
-                    torchvision.utils.save_image(predictions, './test/predictions.png', 10)
+                    torchvision.utils.save_image(images, './train/image.png', 5)
+                    torchvision.utils.save_image(masks, './train/masks.png', 5)
+                    torchvision.utils.save_image(predictions, './train/predictions.png', 5)
+                    torchvision.utils.save_image(predictions * images, './train/segment.png', 5)
                 loss = self.calculate_loss(masks, predictions)
                 print(loss.data)
                 loss.backward()
@@ -72,7 +73,10 @@ class SegmentationTrainer():
                             images, masks = images.cuda(), masks.cuda()
                         predictions = self.model(images)
                         if j == 0:
-                            torchvision.utils.save_image(predictions, './train/test_image.png', 10)
+                            torchvision.utils.save_image(predictions*images, './test/segment.png', 5)
+                            torchvision.utils.save_image(images, './test/test_image.png', 5)
+                            torchvision.utils.save_image(masks, './test/test_image.png', 5)
+                            torchvision.utils.save_image(predictions, './test/test_image.png', 5)
                         cum_loss += self.calculate_loss(masks, predictions)
                     cum_loss /= test_size
                     print('Epoch %d\n loss: %f' % (i, cum_loss.data))
