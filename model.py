@@ -41,84 +41,82 @@ class MySegmentator(nn.Module):
         # Conv2d is in_channels, out_channels, kernel_size, stride=1, padding=0, dilation=1, groups=1, bias=True
         self.block1 = nn.Sequential(
             nn.Conv2d(3, 64, default_kernel_size, padding=default_padding),
-            nn.ELU(),
+            nn.ReLU(),
             # squeze width by 2
             nn.Conv2d(64, 128, 3, dilation=2, stride=2, padding=self.calc_pad(3, 2)),
-            nn.ELU()
+            nn.ReLU()
         )
         self.block2 = nn.Sequential(
             nn.BatchNorm2d(128),
             nn.Conv2d(128, 128, default_kernel_size, padding=default_padding),
-            nn.ELU(),
+            nn.ReLU(),
             nn.Conv2d(128, 256, 3, dilation=2, stride=2, padding=self.calc_pad(3, 2)),
-            nn.ELU()
+            nn.ReLU()
         )
         self.block3 = nn.Sequential(
             nn.BatchNorm2d(256),
             nn.Conv2d(256, 256, default_kernel_size, padding=default_padding),
-            nn.ELU(),
+            nn.ReLU(),
             nn.Conv2d(256, 256, default_kernel_size, padding=default_padding),
-            nn.ELU(),
+            nn.ReLU(),
             nn.Conv2d(256, 256, default_kernel_size, padding=default_padding),
-            nn.ELU()
+            nn.ReLU()
         )
         self.block4 = nn.Sequential(
             nn.BatchNorm2d(256),
             nn.Conv2d(256, 512, default_kernel_size, padding=default_padding),
-            nn.ELU(),
+            nn.ReLU(),
            # nn.Dropout2d(),
             nn.Conv2d(512, 512, default_kernel_size, padding=default_padding),
-            nn.ELU(),
+            nn.ReLU(),
            # nn.Dropout2d(),
             nn.Conv2d(512, 512, default_kernel_size, padding=default_padding),
-            nn.ELU()
+            nn.ReLU()
         )
 
         # between operators
         self.upscale2 = torch.nn.Upsample(scale_factor=2)
         self.upscale4 = torch.nn.Upsample(scale_factor=4)
-        self.transfer_to_decoder1 = nn.Conv2d(512 * 3, 512, 1)
-        self.transfer_to_decoder2 = nn.Conv2d(512, 64, 1)
+        self.transfer_to_decoder1 = nn.ConvTranspose2d(512 * 3, 512, 1)
+        self.transfer_to_decoder2 = nn.ConvTranspose2d(512, 64, 1)
 
         # decoder
         self.block5 = nn.Sequential(
             nn.BatchNorm2d(64),
-            nn.Conv2d(64, 64, 1),
-            nn.ELU(),
-            nn.Conv2d(64, 64, default_kernel_size, padding=default_padding),
-            nn.ELU(),
-            nn.Conv2d(64, 512, 1),
-            nn.ELU()
+            nn.ConvTranspose2d(64, 64, default_kernel_size, padding=default_padding),
+            nn.ReLU(),
+            nn.ConvTranspose2d(64, 512, 1),
+            nn.ReLU()
         )
         self.block6 = nn.Sequential(
             nn.BatchNorm2d(512),
-            nn.Conv2d(512, 64, 1),
-            nn.ELU(),
+            nn.ConvTranspose2d(512, 64, 1),
+            nn.ReLU(),
             torch.nn.ConvTranspose2d(64, 64, 5, stride=2, padding=2, output_padding=1),
-            nn.ELU(),
-            nn.Conv2d(64, 256, 1),
-            nn.ELU()
+            nn.ReLU(),
+            nn.ConvTranspose2d(64, 256, 1),
+            nn.ReLU()
         )
         self.block7 = nn.Sequential(
             nn.BatchNorm2d(256),
-            nn.Conv2d(256, 64, 1),
-            nn.ELU(),
-            nn.Conv2d(64, 64, default_kernel_size, padding=default_padding),
-            nn.ELU(),
-            nn.Conv2d(64, 128, 1),
-            nn.ELU()
+            nn.ConvTranspose2d(256, 64, 1),
+            nn.ReLU(),
+            nn.ConvTranspose2d(64, 64, default_kernel_size, padding=default_padding),
+            nn.ReLU(),
+            nn.ConvTranspose2d(64, 128, 1),
+            nn.ReLU()
         )
         self.block8 = nn.Sequential(
             nn.BatchNorm2d(128),
             nn.ConvTranspose2d(128, 64, 5, stride=2, padding=2, output_padding=1),
-            nn.ELU(),
-            nn.Conv2d(64, 64, default_kernel_size, padding=default_padding),
-            nn.ELU(),
-            nn.Conv2d(64, 64, default_kernel_size, padding=default_padding),
-            nn.ELU()
+  #          nn.ReLU(),
+  #          nn.ConvTranspose2d(64, 64, default_kernel_size, padding=default_padding),
+  #          nn.ReLU(),
+  #          nn.ConvTranspose2d(64, 64, default_kernel_size, padding=default_padding),
+             nn.ReLU()
         )
         self.block9 = nn.Sequential(
-            nn.Conv2d(64, 1, 1)
+            nn.ConvTranspose2d(64, 1, 1)
    #         nn.Sigmoid()
         )
 
