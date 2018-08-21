@@ -113,13 +113,11 @@ class MySegmentator(nn.Module):
         self.block8 = nn.Sequential(
             nn.BatchNorm2d(128),
             torch.nn.ConvTranspose2d(128, 64, 5, stride=2, padding=2, output_padding=1),
-            nn.ReLU(),
-            nn.Conv2d(64, 64, 5, padding=self.calc_pad(5)),
             nn.ReLU()
         )
         self.block9 = nn.Sequential(
             nn.Conv2d(64, 1, 1),
-            nn.Hardtanh(min_val=0)
+            nn.Sigmoid()
         )
 
 
