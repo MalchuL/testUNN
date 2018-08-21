@@ -76,13 +76,13 @@ class MySegmentator(nn.Module):
             nn.ReLU()
         )
 
-        #between operators
+        # between operators
         self.upscale2 = torch.nn.Upsample(scale_factor=2)
         self.upscale4 = torch.nn.Upsample(scale_factor=4)
-        self.transfer_to_decoder1 = nn.Conv2d(512*3, 512, 1)
+        self.transfer_to_decoder1 = nn.Conv2d(512 * 3, 512, 1)
         self.transfer_to_decoder2 = nn.Conv2d(512, 64, 1)
 
-        #decoder
+        # decoder
         self.block5 = nn.Sequential(
             nn.BatchNorm2d(64),
             nn.Conv2d(64, 64, 1),
@@ -113,13 +113,13 @@ class MySegmentator(nn.Module):
         self.block8 = nn.Sequential(
             nn.BatchNorm2d(128),
             torch.nn.ConvTranspose2d(128, 64, 5, stride=2, padding=2, output_padding=1),
-            nn.ReLU()
+            nn.ReLU(),
+            torch.nn.Conv2d(64, 64, 5, padding=self.calc_pad(5))
         )
         self.block9 = nn.Sequential(
             nn.Conv2d(64, 1, 1),
             nn.Sigmoid()
         )
-
 
     def forward(self, input):
         # Downsamples images and encodes for it
