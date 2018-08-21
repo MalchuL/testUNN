@@ -13,7 +13,7 @@ class SegmentationTrainer():
         self.batch_size = batch_size
         self.epoch = epoch
         self.model = model.MySegmentator()
-        self.loss = nn.BCELoss()
+        self.loss = nn.BCEWithLogitsLoss()
         self.optimizer = optim.Adam(self.model.parameters())
         self.is_cuda = is_cuda
 
