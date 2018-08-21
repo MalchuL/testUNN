@@ -74,9 +74,9 @@ class SegmentationTrainer():
                         predictions = self.model(images)
                         if j == 0:
                             torchvision.utils.save_image(predictions*images, './test/segment.png', 5)
-                            torchvision.utils.save_image(images, './test/test_image.png', 5)
-                            torchvision.utils.save_image(masks, './test/test_image.png', 5)
-                            torchvision.utils.save_image(predictions, './test/test_image.png', 5)
+                            torchvision.utils.save_image(images, './test/image.png', 5)
+                            torchvision.utils.save_image(masks, './test/mask.png', 5)
+                            torchvision.utils.save_image(predictions, './test/prediction.png', 5)
                         cum_loss += self.calculate_loss(masks, predictions)
                     cum_loss /= test_size
                     print('Epoch %d\n loss: %f' % (i, cum_loss.data))
