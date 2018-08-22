@@ -15,7 +15,7 @@ class SegmentationTrainer():
         self.model = model.MySegmentator()
         self.loss = nn.BCEWithLogitsLoss()
 
-        #RMSprop(self.model.parameters(), lr=1e-3, alpha=0.9)
+        # RMSprop(self.model.parameters(), lr=1e-3, alpha=0.9)
         self.is_cuda = is_cuda
 
     def get_next_batch(self, data, masks, size):
@@ -35,7 +35,9 @@ class SegmentationTrainer():
         return len(data)
 
     def calculate_loss(self, ground_truth, predictions):
-        return self.loss(predictions, ground_truth)
+        dice = 2 * predictions * ground_truth / (ground_truth + predictions)
+        additional_loss = (1 - dice)
+        return self.loss(predictions, ground_truth) + dice
 
     def preprocess(self, images, masks):
         pass
@@ -70,12 +72,12 @@ class SegmentationTrainer():
                     for j in range(test_size):
                         images, masks = test_data[j * self.batch_size:(j + 1) * self.batch_size], test_masks[
                                                                                                   j * self.batch_size:(
-                                                                                                                      j + 1) * self.batch_size]
+                                                                                                                          j + 1) * self.batch_size]
                         if self.is_cuda:
                             images, masks = images.cuda(), masks.cuda()
                         predictions = self.model(images)
                         if j == 0:
-                            torchvision.utils.save_image(predictions*images, './test/segment.png', 5)
+                            torchvision.utils.save_image(predictions * images, './test/segment.png', 5)
                             torchvision.utils.save_image(images, './test/image.png', 5)
                             torchvision.utils.save_image(masks, './test/mask.png', 5)
                             torchvision.utils.save_image(predictions, './test/prediction.png', 5)
