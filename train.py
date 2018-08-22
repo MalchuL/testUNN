@@ -9,11 +9,15 @@ import torchvision
 
 class SegmentationTrainer():
     def __init__(self, checkpoint_path, epoch, batch_size, is_cuda=True):
+        self.sigmoid_output = False
         self.checkpoint_path = checkpoint_path
         self.batch_size = batch_size
         self.epoch = epoch
-        self.model = model.MySegmentator()
-        self.loss = nn.BCEWithLogitsLoss()
+        self.model = model.MySegmentator(sigmoid_output=self.sigmoid_output)
+        if self.sigmoid_output:
+            self.loss = nn.BCELoss()
+        else:
+            self.loss = nn.BCEWithLogitsLoss()
 
         # RMSprop(self.model.parameters(), lr=1e-3, alpha=0.9)
         self.is_cuda = is_cuda
@@ -35,9 +39,11 @@ class SegmentationTrainer():
         return len(data)
 
     def calculate_loss(self, ground_truth, predictions):
+        if not self.sigmoid_output:
+            predictions = F.sigmoid(predictions)
         dice = 2 * predictions * ground_truth / (ground_truth + predictions)
         additional_loss = (1 - dice)
-        return self.loss(predictions, ground_truth) + dice
+        return self.loss(predictions, ground_truth) + additional_loss
 
     def preprocess(self, images, masks):
         pass

@@ -32,8 +32,11 @@ class MySegmentator(nn.Module):
         x = self.block9(x)
         return x
 
-    def __init__(self):
+    def __init__(self, sigmoid_output=True):
         super(MySegmentator, self).__init__()
+
+        self.sigmoid_output = sigmoid_output
+
         # For Gaussian pyramid
         self.avg_pool = nn.AvgPool2d(2, 2)
         self.default_kernel_size = default_kernel_size = 3
@@ -136,7 +139,10 @@ class MySegmentator(nn.Module):
         F = func.elu(F)
         F = self.transfer_to_decoder2(F)
         F = func.elu(F)
-        return self._decoder(F)
+        decoded = self._decoder(F)
+        if self.sigmoid_output:
+            decoded = func.sigmoid(decoded)
+        return decoded
 
 
 if __name__ == "__main__":
