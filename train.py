@@ -14,7 +14,8 @@ class SegmentationTrainer():
         self.epoch = epoch
         self.model = model.MySegmentator()
         self.loss = nn.BCEWithLogitsLoss()
-        self.optimizer = optim.RMSprop(self.model.parameters(), lr=1e-4, alpha=0.9)
+
+        #RMSprop(self.model.parameters(), lr=1e-3, alpha=0.9)
         self.is_cuda = is_cuda
 
     def get_next_batch(self, data, masks, size):
@@ -41,6 +42,7 @@ class SegmentationTrainer():
 
     def train(self, train_data, train_masks, test_data, test_masks):
         self.resume()
+        self.optimizer = optim.RMSprop(self.model.parameters(), lr=1e-3, alpha=0.9)
         data_size = self.get_data_len(train_data)
         iterations = int(data_size / self.batch_size)
         if self.is_cuda:

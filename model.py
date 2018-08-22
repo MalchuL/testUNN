@@ -109,7 +109,12 @@ class MySegmentator(nn.Module):
         self.block8 = nn.Sequential(
             nn.BatchNorm2d(128),
             nn.ConvTranspose2d(128, 64, 5, stride=2, padding=2, output_padding=1),
+            nn.ReLU(),
+            nn.Conv2d(64, 64, default_kernel_size, padding=default_padding),
+            nn.ReLU(),
+            nn.Conv2d(64, 64, default_kernel_size, padding=default_padding),
             nn.ReLU()
+
         )
         self.block9 = nn.Sequential(
             nn.ConvTranspose2d(64, 1, 1)
