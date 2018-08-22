@@ -39,11 +39,22 @@ class SegmentationTrainer():
         return len(data)
 
     def calculate_loss(self, ground_truth, predictions):
+        lambd = 1e-4
+        eps = 1e-8
+        loss = (1 - lambd) * self.loss(predictions, ground_truth)
         if not self.sigmoid_output:
             predictions = F.sigmoid(predictions)
-        dice = 2 * predictions * ground_truth / (ground_truth + predictions)
-        additional_loss = (1 - dice)
-        return self.loss(predictions, ground_truth) + additional_loss
+
+        count_pred = predictions
+        count_truth = ground_truth
+        count_intersection = predictions * ground_truth
+        for i in range(3):
+            count_pred = torch.mean(count_pred, dim=1)
+            count_truth = torch.mean(count_truth, dim=1)
+            count_intersection = torch.mean(count_intersection, dim=1)
+        dice = 2 * count_intersection / (count_pred + count_truth + eps)
+        additional_loss = lambd * torch.mean(1 - dice)
+        return loss + additional_loss
 
     def preprocess(self, images, masks):
         pass
@@ -61,7 +72,7 @@ class SegmentationTrainer():
                 if self.is_cuda:
                     images, masks = images.cuda(), masks.cuda()
                 predictions = self.model(images)
-                if j == 0:
+                if j % 10 == 0:
                     torchvision.utils.save_image(images, './train/image.png', 5)
                     torchvision.utils.save_image(masks, './train/masks.png', 5)
                     torchvision.utils.save_image(predictions, './train/predictions.png', 5)
