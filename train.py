@@ -39,7 +39,7 @@ class SegmentationTrainer():
         return len(data)
 
     def calculate_loss(self, ground_truth, predictions):
-        lambd = 1e-4
+        lambd = 1e-1
         eps = 1e-8
         loss = self.loss(predictions, ground_truth)
         if not self.sigmoid_output:
@@ -75,8 +75,8 @@ class SegmentationTrainer():
                 if j % 50 == 0:
                     torchvision.utils.save_image(images, './train/image.png', 5)
                     torchvision.utils.save_image(masks, './train/masks.png', 5)
-                    torchvision.utils.save_image(predictions, './train/predictions.png', 5)
-                    torchvision.utils.save_image(predictions * images, './train/segment.png', 5)
+                    torchvision.utils.save_image(F.sigmoid(predictions), './train/predictions.png', 5)
+                    torchvision.utils.save_image(F.sigmoid(predictions) * images, './train/segment.png', 5)
                 loss = self.calculate_loss(masks, predictions)
                 print(loss.data)
                 loss.backward()
@@ -94,10 +94,10 @@ class SegmentationTrainer():
                             images, masks = images.cuda(), masks.cuda()
                         predictions = self.model(images)
                         if j == 0:
-                            torchvision.utils.save_image(predictions * images, './test/segment.png', 5)
+                            torchvision.utils.save_image(F.sigmoid(predictions) * images, './test/segment.png', 5)
                             torchvision.utils.save_image(images, './test/image.png', 5)
                             torchvision.utils.save_image(masks, './test/mask.png', 5)
-                            torchvision.utils.save_image(predictions, './test/prediction.png', 5)
+                            torchvision.utils.save_image(F.sigmoid(predictions), './test/prediction.png', 5)
                         cum_loss += self.calculate_loss(masks, predictions)
                     cum_loss /= test_size
                     print('Epoch %d\n loss: %f' % (i, cum_loss.data))
