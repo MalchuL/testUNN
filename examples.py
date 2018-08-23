@@ -23,7 +23,7 @@ if __name__ == '__main__':
     for img, _ in masks:
         all_masks.append(img)
 
-    trainer = train.SegmentationTrainer('./train/model.ckpt', 1000, 10, True)
+    trainer = train.SegmentationTrainer('./train/model.ckpt', 1000, 5, True)
     train_data, train_mask, test_data, test_mask = divide_data(all_data, all_masks)
     train_data = torch.stack(train_data).type(torch.FloatTensor)
     train_mask = torch.stack(train_mask).type(torch.FloatTensor)

@@ -80,47 +80,49 @@ class MySegmentator(nn.Module):
         # between operators
         self.upscale2 = torch.nn.Upsample(scale_factor=2)
         self.upscale4 = torch.nn.Upsample(scale_factor=4)
-        self.transfer_to_decoder1 = nn.ConvTranspose2d(512 * 3, 512, 1)
-        self.transfer_to_decoder2 = nn.ConvTranspose2d(512, 256, 1)
+        self.transfer_to_decoder1 = nn.ConvTranspose2d(512 * 3, 64, 1)
+        #self.transfer_to_decoder2 = nn.ConvTranspose2d(512, 256, 1)
 
         # decoder
         self.block5 = nn.Sequential(
-            nn.BatchNorm2d(256),
-            nn.ConvTranspose2d(256, 256, default_kernel_size, padding=default_padding),
-            nn.ELU(),
-            nn.ConvTranspose2d(256, 512, 1),
-            nn.ELU()
+            nn.BatchNorm2d(64),
+            nn.ConvTranspose2d(64, 64, 1),
+            nn.ReLU(),
+            nn.ConvTranspose2d(64, 64, default_kernel_size, padding=default_padding),
+            nn.ReLU(),
+            nn.ConvTranspose2d(64, 512, 1),
+            nn.ReLU()
         )
         self.block6 = nn.Sequential(
             nn.BatchNorm2d(512),
-            nn.ConvTranspose2d(512, 256, 1),
-            nn.ELU(),
-            torch.nn.ConvTranspose2d(256, 256, 5, stride=2, padding=2, output_padding=1),
-            nn.ELU(),
-            nn.ConvTranspose2d(256, 256, 1),
-            nn.ELU()
+            nn.ConvTranspose2d(512, 64, 1),
+            nn.ReLU(),
+            torch.nn.ConvTranspose2d(64, 64, 5, stride=2, padding=2, output_padding=1),
+            nn.ReLU(),
+            nn.ConvTranspose2d(64, 256, 1),
+            nn.ReLU()
         )
         self.block7 = nn.Sequential(
             nn.BatchNorm2d(256),
-            nn.ConvTranspose2d(256, 128, 1),
-            nn.ELU(),
-            nn.ConvTranspose2d(128, 128, default_kernel_size, padding=default_padding),
-            nn.ELU(),
-            nn.ConvTranspose2d(128, 128, 1),
-            nn.ELU()
+            nn.ConvTranspose2d(256, 64, 1),
+            nn.ReLU(),
+            nn.ConvTranspose2d(64, 64, default_kernel_size, padding=default_padding),
+            nn.ReLU(),
+            nn.ConvTranspose2d(64, 128, 1),
+            nn.ReLU()
         )
         self.block8 = nn.Sequential(
             nn.BatchNorm2d(128),
-            nn.ConvTranspose2d(128, 80, 5, stride=2, padding=2, output_padding=1),
-            nn.ELU(),
-            nn.Conv2d(80, 64, default_kernel_size, padding=default_padding),
-            nn.ELU(),
-            nn.Conv2d(64, 64, default_kernel_size, padding=default_padding),
-            nn.ELU()
+            nn.ConvTranspose2d(128, 64, 5, stride=2, padding=2, output_padding=1),
+            nn.ReLU(),
+            #nn.Conv2d(80, 64, default_kernel_size, padding=default_padding),
+            #nn.ELU(),
+            #nn.Conv2d(64, 64, default_kernel_size, padding=default_padding),
+            #nn.ELU()
 
         )
         self.block9 = nn.Sequential(
-            nn.ConvTranspose2d(64, 1, 1)
+            nn.ConvTranspose2d(64, 1, 1),
    #         nn.Sigmoid()
         )
 
@@ -134,9 +136,9 @@ class MySegmentator(nn.Module):
         F2 = self.upscale4(self._encoder(I2))
         F = torch.cat([F0, F1, F2], dim=1)
         F = self.transfer_to_decoder1(F)
-        F = func.elu(F)
-        F = self.transfer_to_decoder2(F)
-        F = func.elu(F)
+        F = func.relu(F)
+        #F = self.transfer_to_decoder2(F)
+        #F = func.elu(F)
         decoded = self._decoder(F)
         if self.sigmoid_output:
             decoded = func.sigmoid(decoded)

@@ -72,7 +72,7 @@ class SegmentationTrainer():
                 if self.is_cuda:
                     images, masks = images.cuda(), masks.cuda()
                 predictions = self.model(images)
-                if j % 10 == 0:
+                if j % 50 == 0:
                     torchvision.utils.save_image(images, './train/image.png', 5)
                     torchvision.utils.save_image(masks, './train/masks.png', 5)
                     torchvision.utils.save_image(predictions, './train/predictions.png', 5)
