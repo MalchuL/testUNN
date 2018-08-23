@@ -13,9 +13,9 @@ def divide_data(all_data, all_masks):
 
 
 if __name__ == '__main__':
-    data = ImageFolder(root='./dataset/images', transform=tr.Compose([tr.Resize((256, 256)), ToTensor()]))
+    data = ImageFolder(root='./dataset/images', transform=tr.Compose([tr.Resize((128, 128)), ToTensor()]))
     masks = ImageFolder(root='./dataset/masks',
-                        transform=tr.Compose([tr.Resize((256, 256)), tr.Grayscale(), ToTensor()]))
+                        transform=tr.Compose([tr.Resize((128, 128)), tr.Grayscale(), ToTensor()]))
     all_data = []
     all_masks = []
     for img, _ in data:
@@ -23,7 +23,7 @@ if __name__ == '__main__':
     for img, _ in masks:
         all_masks.append(img)
 
-    trainer = train.SegmentationTrainer('./train/model.ckpt', 1000, 2, True)
+    trainer = train.SegmentationTrainer('./train/model.ckpt', 1000, 5, True)
     train_data, train_mask, test_data, test_mask = divide_data(all_data, all_masks)
     train_data = torch.stack(train_data).type(torch.FloatTensor)
     train_mask = torch.stack(train_mask).type(torch.FloatTensor)
