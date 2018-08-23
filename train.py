@@ -41,27 +41,27 @@ class SegmentationTrainer():
     def calculate_loss(self, ground_truth, predictions):
         lambd = 1e-4
         eps = 1e-8
-        loss = (1 - lambd) * self.loss(predictions, ground_truth)
+        loss = self.loss(predictions, ground_truth)
         if not self.sigmoid_output:
             predictions = F.sigmoid(predictions)
 
         count_pred = predictions
         count_truth = ground_truth
         count_intersection = predictions * ground_truth
-        for i in range(3):
+        for _ in range(3):
             count_pred = torch.mean(count_pred, dim=1)
             count_truth = torch.mean(count_truth, dim=1)
             count_intersection = torch.mean(count_intersection, dim=1)
         dice = 2 * count_intersection / (count_pred + count_truth + eps)
-        additional_loss = lambd * torch.mean(1 - dice)
-        return loss + additional_loss
+        additional_loss = torch.mean(1 - dice)
+        return (1 - lambd) * loss + lambd * additional_loss
 
     def preprocess(self, images, masks):
         pass
 
     def train(self, train_data, train_masks, test_data, test_masks):
         self.resume()
-        self.optimizer = optim.RMSprop(self.model.parameters(), lr=1e-3, alpha=0.9)
+        self.optimizer = optim.RMSprop(self.model.parameters(), lr=1e-4, alpha=0.9)
         data_size = self.get_data_len(train_data)
         iterations = int(data_size / self.batch_size)
         if self.is_cuda:
