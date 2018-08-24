@@ -14,7 +14,7 @@ class SeparableConv2d(nn.Module):
         self.dilation = dilation
 
         self.block1 = nn.Sequential(nn.Conv2d(self.in_channels, self.out_channels, 1, bias=False),
-                                    activation(),
+                                    #activation(),
                                     nn.Conv2d(self.out_channels, self.out_channels, self.kernel_size, self.stride,
                                               self.padding, self.dilation, self.out_channels, True),
                                     )
@@ -35,7 +35,7 @@ class SeparableConvTransposed2d(nn.Module):
         self.output_padding = output_padding
         self.dilation = dilation
         self.block1 = nn.Sequential(nn.Conv2d(self.in_channels, self.out_channels, 1, bias=False),
-                                    activation(),
+                                    #activation(),
                                     nn.ConvTranspose2d(self.out_channels, self.out_channels, self.kernel_size, self.stride,
                                               self.padding, self.output_padding, self.out_channels, True),
                                     )
