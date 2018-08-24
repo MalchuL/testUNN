@@ -4,7 +4,7 @@ import torch.nn.functional as func
 
 
 class SeparableConv2d(nn.Module):
-    def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0, dilation=1, activation = nn.ReLU):
+    def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0, dilation=1, activation = nn.Tanhshrink):
         super(SeparableConv2d, self).__init__()
         self.kernel_size = kernel_size
         self.in_channels = in_channels
@@ -13,7 +13,7 @@ class SeparableConv2d(nn.Module):
         self.padding = padding
         self.dilation = dilation
 
-        self.block1 = nn.Sequential(nn.Conv2d(self.in_channels, self.out_channels, 1, bias=True),
+        self.block1 = nn.Sequential(nn.Conv2d(self.in_channels, self.out_channels, 1, bias=False),
                                     activation(),
                                     nn.Conv2d(self.out_channels, self.out_channels, self.kernel_size, self.stride,
                                               self.padding, self.dilation, self.out_channels, True),
@@ -25,7 +25,7 @@ class SeparableConv2d(nn.Module):
 
 
 class SeparableConvTransposed2d(nn.Module):
-    def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0, output_padding=0, dilation=1, activation = nn.ReLU):
+    def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0, output_padding=0, dilation=1, activation = nn.Tanhshrink):
         super(SeparableConvTransposed2d, self).__init__()
         self.kernel_size = kernel_size
         self.in_channels = in_channels
@@ -34,7 +34,7 @@ class SeparableConvTransposed2d(nn.Module):
         self.padding = padding
         self.output_padding = output_padding
         self.dilation = dilation
-        self.block1 = nn.Sequential(nn.Conv2d(self.in_channels, self.out_channels, 1, bias=True),
+        self.block1 = nn.Sequential(nn.Conv2d(self.in_channels, self.out_channels, 1, bias=False),
                                     activation(),
                                     nn.ConvTranspose2d(self.out_channels, self.out_channels, self.kernel_size, self.stride,
                                               self.padding, self.output_padding, self.out_channels, True),
@@ -85,37 +85,37 @@ class MySegmentator(nn.Module):
         # Conv2d is in_channels, out_channels, kernel_size, stride=1, padding=0, dilation=1, groups=1, bias=True
         self.block1 = nn.Sequential(
             SeparableConv2d(3, 64, default_kernel_size, padding=default_padding),
-            nn.ReLU(),
+            nn.ELU(alpha=0.1),
             # squeze width by 2
             SeparableConv2d(64, 128, 3, dilation=2, stride=2, padding=self.calc_pad(3, 2)),
-            nn.ReLU()
+            nn.ELU(alpha=0.1)
         )
         self.block2 = nn.Sequential(
             nn.BatchNorm2d(128),
             SeparableConv2d(128, 128, default_kernel_size, padding=default_padding),
-            nn.ReLU(),
+            nn.ELU(alpha=0.1),
             SeparableConv2d(128, 256, 3, dilation=2, stride=2, padding=self.calc_pad(3, 2)),
-            nn.ReLU()
+            nn.ELU(alpha=0.1)
         )
         self.block3 = nn.Sequential(
             nn.BatchNorm2d(256),
             SeparableConv2d(256, 256, default_kernel_size, padding=default_padding),
-            nn.ReLU(),
+            nn.ELU(alpha=0.1),
             SeparableConv2d(256, 256, default_kernel_size, padding=default_padding),
-            nn.ReLU(),
+            nn.ELU(alpha=0.1),
             SeparableConv2d(256, 256, default_kernel_size, padding=default_padding),
-            nn.ReLU()
+            nn.ELU(alpha=0.1)
         )
         self.block4 = nn.Sequential(
             nn.BatchNorm2d(256),
             SeparableConv2d(256, 512, default_kernel_size, padding=default_padding),
-            nn.ReLU(),
+            nn.ELU(alpha=0.1),
             nn.Dropout2d(),
             SeparableConv2d(512, 512, default_kernel_size, padding=default_padding),
-            nn.ReLU(),
+            nn.ELU(alpha=0.1),
             nn.Dropout2d(),
             SeparableConv2d(512, 512, default_kernel_size, padding=default_padding),
-            nn.ReLU()
+            nn.ELU(alpha=0.1)
         )
 
         # between operators
@@ -128,38 +128,38 @@ class MySegmentator(nn.Module):
         self.block5 = nn.Sequential(
             nn.BatchNorm2d(64),
             nn.ConvTranspose2d(64, 64, 1),
-            nn.ReLU(),
+            nn.ELU(alpha=0.1),
             SeparableConvTransposed2d(64, 64, default_kernel_size, padding=default_padding),
-            nn.ReLU(),
+            nn.ELU(alpha=0.1),
             nn.ConvTranspose2d(64, 512, 1),
-            nn.ReLU()
+            nn.ELU(alpha=0.1)
         )
         self.block6 = nn.Sequential(
             nn.BatchNorm2d(512),
             nn.ConvTranspose2d(512, 64, 1),
-            nn.ReLU(),
+            nn.ELU(alpha=0.1),
             SeparableConvTransposed2d(64, 64, 5, stride=2, padding=2, output_padding=1),
-            nn.ReLU(),
+            nn.ELU(alpha=0.1),
             nn.ConvTranspose2d(64, 256, 1),
-            nn.ReLU()
+            nn.ELU(alpha=0.1)
         )
         self.block7 = nn.Sequential(
             nn.BatchNorm2d(256),
             nn.ConvTranspose2d(256, 64, 1),
-            nn.ReLU(),
+            nn.ELU(alpha=0.1),
             SeparableConvTransposed2d(64, 64, default_kernel_size, padding=default_padding),
-            nn.ReLU(),
+            nn.ELU(alpha=0.1),
             nn.ConvTranspose2d(64, 128, 1),
-            nn.ReLU()
+            nn.ELU(alpha=0.1)
         )
         self.block8 = nn.Sequential(
             nn.BatchNorm2d(128),
             SeparableConvTransposed2d(128, 64, 5, stride=2, padding=2, output_padding=1),
-            nn.ReLU(),
-#            SeparableConv2d(64, 64, default_kernel_size, padding=default_padding),
-#            nn.ELU(),
-#            SeparableConv2d(64, 64, default_kernel_size, padding=default_padding),
-#            nn.ELU()
+            nn.ELU(alpha=0.1),
+            nn.Conv2d(64, 64, default_kernel_size, padding=default_padding),
+            nn.ELU(alpha=0.1),
+            SeparableConv2d(64, 64, default_kernel_size, padding=default_padding),
+            nn.ELU(alpha=0.1)
 
         )
         self.block9 = nn.Sequential(
@@ -177,7 +177,7 @@ class MySegmentator(nn.Module):
         F2 = self.upscale4(self._encoder(I2))
         F = torch.cat([F0, F1, F2], dim=1)
         F = self.transfer_to_decoder1(F)
-        F = func.relu(F)
+        F = func.elu(F)
         #F = self.transfer_to_decoder2(F)
         #F = func.elu(F)
         decoded = self._decoder(F)
