@@ -13,7 +13,7 @@ class SegmentationTrainer():
         self.checkpoint_path = checkpoint_path
         self.batch_size = batch_size
         self.epoch = epoch
-        self.model = model.MySegmentator(sigmoid_output=self.sigmoid_output)
+        self.model = model.UNet(is_sigmoid=self.sigmoid_output)
         if self.sigmoid_output:
             self.loss = nn.BCELoss()
         else:
@@ -39,7 +39,7 @@ class SegmentationTrainer():
         return len(data)
 
     def calculate_loss(self, ground_truth, predictions):
-        lambd = 0.05
+        lambd = 0.3
         eps = 1e-8
         loss = self.loss(predictions, ground_truth)
         if not self.sigmoid_output:
