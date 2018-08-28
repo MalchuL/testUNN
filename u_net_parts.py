@@ -7,7 +7,7 @@ import torch.nn.functional as F
 
 class SeparableConv2d(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0, dilation=1,
-                 activation=nn.Tanhshrink):
+                 activation=nn.ELU):
         super(SeparableConv2d, self).__init__()
         self.kernel_size = kernel_size
         self.in_channels = in_channels
@@ -16,8 +16,8 @@ class SeparableConv2d(nn.Module):
         self.padding = padding
         self.dilation = dilation
 
-        self.block1 = nn.Sequential(nn.Conv2d(self.in_channels, self.out_channels, 1, bias=False),
-                                    # activation(),
+        self.block1 = nn.Sequential(nn.Conv2d(self.in_channels, self.out_channels, 1, bias=True),
+                                    activation(),
                                     nn.Conv2d(self.out_channels, self.out_channels, self.kernel_size, self.stride,
                                               self.padding, self.dilation, self.out_channels, True),
                                     )
@@ -28,7 +28,7 @@ class SeparableConv2d(nn.Module):
 
 class SeparableConvTransposed2d(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0, output_padding=0, dilation=1,
-                 activation=nn.Tanhshrink):
+                 activation=nn.ELU):
         super(SeparableConvTransposed2d, self).__init__()
         self.kernel_size = kernel_size
         self.in_channels = in_channels
@@ -37,8 +37,8 @@ class SeparableConvTransposed2d(nn.Module):
         self.padding = padding
         self.output_padding = output_padding
         self.dilation = dilation
-        self.block1 = nn.Sequential(nn.Conv2d(self.in_channels, self.out_channels, 1, bias=False),
-                                    # activation(),
+        self.block1 = nn.Sequential(nn.Conv2d(self.in_channels, self.out_channels, 1, bias=True),
+                                    activation(),
                                     nn.ConvTranspose2d(self.out_channels, self.out_channels, self.kernel_size,
                                                        self.stride,
                                                        self.padding, self.output_padding, self.out_channels, True),

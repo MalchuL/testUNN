@@ -84,7 +84,7 @@ class SegmentationTrainer():
                 print(loss.data)
                 loss.backward()
                 self.optimizer.step()
-            if i > 0:
+            if i >= 0:
                 with torch.no_grad():
                     self.save()
                     test_size = int(self.get_data_len(test_data) / self.batch_size) - 1
