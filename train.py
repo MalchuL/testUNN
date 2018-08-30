@@ -38,9 +38,40 @@ class SegmentationTrainer():
     def get_data_len(self, data):
         return len(data)
 
+
+    def weight_loss(self, mask):
+        import numpy as np
+        def calc_weight_matrix(size, channels=1, sigma=4, w0=0.05):
+            weight = np.zeros([2 * size + 1, 2 * size + 1], dtype=np.float32)
+            center_index = size
+            for x in range(-size, size + 1):
+                for y in range(-size, size + 1):
+                    weight[center_index + x, center_index + y] = x * x + y * y
+            weight = w0 * np.exp(-weight / (2 * sigma * sigma))
+            return weight[None, None, :, :]
+
+        def get_calc_heat_map(binary_mask, weight):
+            pad_x = (weight.shape[2] - 1) // 2
+            pad_y = (weight.shape[3] - 1) // 2
+            x = torch.nn.functional.conv2d(binary_mask, weight, padding=(pad_x, pad_y))
+            reverced_map = 1 - binary_mask
+            x = x * reverced_map
+            return x
+
+        weight = torch.from_numpy(calc_weight_matrix(15))
+        if self.is_cuda:
+            weight = weight.cuda()
+        negative_heat = get_calc_heat_map(mask, weight)
+        positive_heat = get_calc_heat_map(1-mask, weight)
+        return negative_heat + positive_heat + 1
+
     def calculate_loss(self, ground_truth, predictions):
         lambd = 0.3
         eps = 1e-8
+        weights = self.weight_loss(ground_truth)
+        if self.is_cuda:
+            weights = weights.cuda()
+        self.loss.weight = weights
         loss = self.loss(predictions, ground_truth)
         if not self.sigmoid_output:
             predictions = F.sigmoid(predictions)
@@ -76,6 +107,8 @@ class SegmentationTrainer():
                     images, masks = images.cuda(), masks.cuda()
                 predictions = self.model(images)
                 if j % 50 == 0:
+                    print('save')
+                    self.save()
                     torchvision.utils.save_image(images, './train/image.png', 5)
                     torchvision.utils.save_image(masks, './train/masks.png', 5)
                     torchvision.utils.save_image(F.sigmoid(predictions), './train/predictions.png', 5)
